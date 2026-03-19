@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consumidor Digital Colombia</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#F0EDE8;--white:#FFFFFF;--ink:#18181B;--o:#E8520A;--a:#F5A623;--y:#F2C94C;
+  --muted:#71717A;--border:#E4E0D8;--card:#FFFFFF;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);display:flex;font-size:13px;overflow-x:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-width:220px;height:100vh;position:sticky;top:0;background:var(--ink);display:flex;flex-direction:column;padding:24px 14px;overflow:hidden;z-index:50;}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;padding:0 6px;}
+.logo-icon{width:34px;height:34px;background:var(--o);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-text{font-size:14px;font-weight:800;color:#fff;letter-spacing:-.3px;}
+.logo-sub{font-size:10px;color:rgba(255,255,255,.3);font-weight:400;}
+.nav-sec{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.22);padding:0 8px;margin:18px 0 6px;}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:10px;cursor:pointer;margin-bottom:2px;text-decoration:none;transition:background .15s;}
+.ni:hover{background:rgba(255,255,255,.06);}
+.ni.active{background:var(--o);}
+.ni svg{width:15px;height:15px;color:rgba(255,255,255,.35);flex-shrink:0;}
+.ni.active svg{color:#fff;}
+.ni span{font-size:12px;font-weight:500;color:rgba(255,255,255,.45);}
+.ni.active span{color:#fff;font-weight:700;}
+.sb-bottom{margin-top:auto;}
+.src-box{background:rgba(255,255,255,.05);border-radius:12px;padding:14px;}
+.src-box .st{font-size:11px;font-weight:700;color:var(--a);margin-bottom:5px;}
+.src-box .sl{font-size:10px;color:rgba(255,255,255,.3);line-height:1.7;}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;overflow-x:hidden;}
+
+/* PAGE = full viewport height section */
+.page{min-height:100vh;padding:28px 28px 28px 28px;display:flex;flex-direction:column;gap:20px;}
+.page.dark-page{background:var(--ink);}
+.page.alt-page{background:#F7F4EF;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.t-title{font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.5px;}
+.t-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.tab-group{display:flex;background:#fff;border-radius:10px;padding:3px;border:1px solid var(--border);}
+.tb{padding:6px 14px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);}
+.tb.active{background:var(--o);color:#fff;}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;flex-shrink:0;}
+.kc{background:#fff;border-radius:16px;padding:20px 20px 16px;border:1px solid var(--border);position:relative;overflow:hidden;}
+.kc.kco{background:var(--o);border:none;}
+.kc.kcd{background:var(--ink);border:none;}
+.kc::after{content:'';position:absolute;bottom:-24px;right:-24px;width:90px;height:90px;border-radius:50%;background:rgba(0,0,0,.05);}
+.kc.kco::after{background:rgba(255,255,255,.1);}
+.kc.kcd::after{background:rgba(255,255,255,.04);}
+.kc-lbl{font-size:11px;font-weight:500;color:var(--muted);margin-bottom:8px;}
+.kco .kc-lbl,.kcd .kc-lbl{color:rgba(255,255,255,.55);}
+.kc-val{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-1px;line-height:1;}
+.kco .kc-val,.kcd .kc-val{color:#fff;}
+.kc-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:3px 9px;border-radius:100px;margin-top:8px;background:rgba(34,197,94,.1);color:#16a34a;}
+.kco .kc-badge{background:rgba(255,255,255,.2);color:#fff;}
+.kcd .kc-badge{background:rgba(242,201,76,.18);color:var(--y);}
+.kc-src{font-size:9px;color:rgba(113,113,122,.45);margin-top:5px;}
+.kco .kc-src,.kcd .kc-src{color:rgba(255,255,255,.3);}
+
+/* CHART CARD */
+.cc{background:#fff;border-radius:16px;padding:22px;border:1px solid var(--border);display:flex;flex-direction:column;}
+.cc.ccd{background:var(--ink);border:none;}
+.cc.cco{background:var(--accent-bg,#FFF4EE);border:1px solid rgba(232,82,10,.15);}
+.cc-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;flex-shrink:0;}
+.cc-title{font-size:13px;font-weight:700;color:var(--ink);letter-spacing:-.2px;}
+.ccd .cc-title{color:#fff;}
+.cc-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.ccd .cc-sub{color:rgba(255,255,255,.35);}
+.cc-tag{font-size:10px;font-weight:600;padding:3px 10px;border-radius:100px;background:#FFF4EE;color:var(--o);}
+.ccd .cc-tag{background:rgba(232,82,10,.2);color:var(--a);}
+.ca{flex:1;min-height:0;position:relative;}
+
+/* GRID LAYOUTS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.g-main{display:grid;grid-template-columns:1fr 1fr 300px;gap:16px;}
+.g-bot{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:16px;}
+
+/* SEGMENTS */
+.seg-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.seg-item:last-child{border-bottom:none;padding-bottom:0;}
+.seg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+.seg-info{flex:1;}
+.seg-name{font-size:12px;font-weight:600;}
+.seg-desc{font-size:10px;color:var(--muted);margin-top:1px;}
+.seg-bar-t{height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden;}
+.seg-bar-f{height:100%;border-radius:2px;}
+.seg-pct{font-size:17px;font-weight:800;letter-spacing:-.5px;}
+
+/* DEPT BARS */
+.dept-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.dept-row:last-child{border-bottom:none;}
+.dept-n{font-size:11px;font-weight:500;width:120px;color:var(--ink);}
+.dept-bt{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.dept-bf{height:100%;border-radius:2px;background:var(--o);}
+.dept-pct{font-size:11px;font-weight:700;color:var(--o);width:32px;text-align:right;}
+
+/* JOURNEY */
+.journey{display:flex;gap:0;border-radius:16px;overflow:hidden;}
+.jstep{flex:1;padding:20px 16px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:5px;transition:background .15s;}
+.jstep:last-child{border-right:none;}
+.jstep:hover{background:var(--bg);}
+.jn{font-size:28px;font-weight:800;color:var(--o);line-height:1;}
+.jt{font-size:12px;font-weight:700;color:var(--ink);}
+.jm{font-size:10px;color:var(--muted);}
+
+/* SIMULATOR */
+.sim-card{background:var(--o);border-radius:16px;padding:22px;}
+.sim-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;}
+.sim-sub{font-size:10px;color:rgba(255,255,255,.65);margin-bottom:14px;}
+.sim-big{font-size:48px;font-weight:800;color:#fff;letter-spacing:-2px;line-height:1;margin-bottom:16px;}
+.sc{margin-bottom:12px;}
+.sc label{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.6);display:flex;justify-content:space-between;}
+.sc-val{color:#fff!important;}
+.sc input{width:100%;accent-color:#fff;margin-top:5px;}
+
+/* HYPO */
+.hypo-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.hypo-item:last-child{border-bottom:none;padding-bottom:0;}
+.hypo-num{font-size:20px;font-weight:800;color:var(--o);line-height:1;width:22px;flex-shrink:0;}
+.hypo-body .htag{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--o);margin-bottom:3px;}
+.hypo-body .htext{font-size:11px;color:var(--muted);line-height:1.6;}
+
+/* INTL */
+.il{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.il:last-child{border-bottom:none;}
+.il-name{font-size:12px;font-weight:600;width:80px;}
+.il-name.co{color:var(--o);}
+.il-bt{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.il-bf{height:100%;border-radius:3px;}
+.il-pct{font-size:12px;font-weight:800;width:36px;text-align:right;}
+.il-pct.co{color:var(--o);}
+
+/* RECS */
+.rec-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6;align-items:flex-start;}
+.rec-item:last-child{border-bottom:none;padding-bottom:0;}
+.rdot{width:5px;height:5px;background:var(--o);border-radius:50%;flex-shrink:0;margin-top:6px;}
+
+/* 3D ILLUSTRATION SVG */
+.illo{display:flex;align-items:center;justify-content:center;}
+
+/* MAP */
+.dp{stroke:#F0EDE8;stroke-width:1;cursor:pointer;transition:opacity .18s;}
+.dp:hover{opacity:.7;}
+.map-tip{font-family:'Plus Jakarta Sans',sans-serif;}
+
+/* PAGE HEADER */
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-shrink:0;}
+.ph-left .ph-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--o);margin-bottom:4px;}
+.ph-left .ph-title{font-size:22px;font-weight:800;letter-spacing:-.4px;}
+.dark-page .ph-left .ph-title{color:#fff;}
+.dark-page .ph-left .ph-label{color:var(--a);}
+.ph-divider{height:2px;background:var(--border);border-radius:1px;margin-bottom:20px;flex-shrink:0;}
+.dark-page .ph-divider{background:rgba(255,255,255,.08);}
+
+/* SCROLLBAR */
+.main::-webkit-scrollbar{width:3px;}
+.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* SOURCE NOTE */
+.sn{font-size:9px;color:rgba(113,113,122,.4);margin-top:10px;font-weight:500;flex-shrink:0;}
+.ccd .sn{color:rgba(255,255,255,.18);}
+
+@media(max-width:1100px){.g-main,.g-bot{grid-template-columns:1fr 1fr;}.g-main > *:last-child{grid-column:1/3;}}
+@media(max-width:800px){.sidebar{display:none;}.kpi-row,.g2,.g3,.g4,.g-main,.g-bot{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M3 3h7v7H3zm11 0h7v7h-7zm0 11h7v7h-7zM3 14l3.5-3.5L10 14l-3.5 3.5z"/></svg>
+    </div>
+    <div>
+      <div class="logo-text">DataCO</div>
+      <div class="logo-sub">E-commerce Analytics</div>
+    </div>
+  </div>
+
+  <div class="nav-sec">Vistas</div>
+  <a class="ni active" href="#p1">
+    <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span>Resumen general</span>
+  </a>
+  <a class="ni" href="#p2">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span>Perfil consumidor</span>
+  </a>
+  <a class="ni" href="#p3">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+    <span>Métodos de pago</span>
+  </a>
+  <a class="ni" href="#p4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+    <span>Geografía</span>
+  </a>
+  <a class="ni" href="#p5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/></svg>
+    <span>Tendencia</span>
+  </a>
+  <a class="ni" href="#p6">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2v10l6 3"/></svg>
+    <span>Segmentos</span>
+  </a>
+  <a class="ni" href="#p7">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    <span>Global + Insights</span>
+  </a>
+
+  <div class="sb-bottom">
+    <div class="src-box">
+      <div class="st">Fuentes oficiales</div>
+      <div class="sl">DANE · MinTIC · CCCE<br>Superfinanciera<br>eMarketer 2023</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN SCROLL -->
+<div class="main">
+
+<!-- ═══ PAGE 1: RESUMEN ═══ -->
+<div class="page" id="p1">
+  <div class="topbar">
+    <div>
+      <div class="t-title">Consumidor Digital Colombia</div>
+      <div class="t-sub">Análisis e-commerce 2018–2025 · DANE · MinTIC · CCCE · Superfinanciera</div>
+    </div>
+    <div class="tab-group">
+      <button class="tb" onclick="setYear(this,'2025')">2025*</button>
+      <button class="tb" onclick="setYear(this,'2024')">2024</button>
+      <button class="tb active" onclick="setYear(this,'2023')">2023</button>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kc kco">
+      <div class="kc-lbl">Hogares que compran online</div>
+      <div class="kc-val" id="kpi-hogares">34.7%</div>
+      <div class="kc-badge" id="kpi-hogares-badge">+3.2pp vs 2022</div>
+      <div class="kc-src" id="kpi-hogares-src">DANE TIC Hogares 2023</div>
+    </div>
+    <div class="kc kcd">
+      <div class="kc-lbl">Compras desde celular</div>
+      <div class="kc-val" id="kpi-celular">68%</div>
+      <div class="kc-badge">Mobile-first</div>
+      <div class="kc-src" id="kpi-celular-src">MinTIC 2023</div>
+    </div>
+    <div class="kc">
+      <div class="kc-lbl">Usuarios de internet</div>
+      <div class="kc-val" id="kpi-internet">37.2M</div>
+      <div class="kc-badge" id="kpi-internet-badge">+8.4% anual</div>
+      <div class="kc-src" id="kpi-internet-src">MinTIC 2023</div>
+    </div>
+    <div class="kc">
+      <div class="kc-lbl">E-commerce total</div>
+      <div class="kc-val" id="kpi-ecomm">$72B</div>
+      <div class="kc-badge" id="kpi-ecomm-badge">COP · +9% vs 2022</div>
+      <div class="kc-src" id="kpi-ecomm-src">CCCE 2023</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT GRID -->
+  <div class="g-main" style="flex:1;min-height:0;">
+    <!-- Tendencia -->
+    <div class="cc ccd" style="display:flex;flex-direction:column;">
+      <div class="cc-head">
+        <div><div class="cc-title">Tendencia 2018–2025</div><div class="cc-sub">% hogares con compra online — DANE</div></div>
+        <span class="cc-tag">+20pp</span>
+      </div>
+      <div class="ca" style="min-height:200px;"><canvas id="tendChart"></canvas></div>
+      <div class="sn">Fuente: DANE — Encuesta TIC Hogares 2018–2024 / Proyección CCCE 2025</div>
+    </div>
+
+    <!-- Barreras -->
+    <div class="cc" style="display:flex;flex-direction:column;">
+      <div class="cc-head">
+        <div><div class="cc-title">Razones para NO comprar online</div><div class="cc-sub">% no compradores — <span class="yr-label">DANE 2024</span></div></div>
+      </div>
+      <div class="ca" style="min-height:200px;"><canvas id="barrerasChart"></canvas></div>
+      <div class="sn">Fuente: DANE — Encuesta TIC Hogares 2023</div>
+    </div>
+
+    <!-- Right: Hipotesis + 3D illo -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <!-- 3D illustration -->
+      <div class="cc" style="align-items:center;padding:20px;gap:12px;flex-direction:row;">
+        <div style="width:80px;height:80px;position:relative;flex-shrink:0;">
+          <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:36px;height:8px;background:radial-gradient(ellipse,rgba(232,82,10,.4) 0%,transparent 70%);border-radius:50%;"></div>
+          <div style="position:absolute;left:50%;transform:translateX(-50%);bottom:12px;width:28px;height:52px;background:linear-gradient(135deg,#F2C94C 0%,#F5A623 50%,#E8870A 100%);border-radius:50% 50% 20% 20% / 60% 60% 20% 20%;box-shadow:inset -6px 0 12px rgba(0,0,0,.2),inset 4px 0 8px rgba(255,255,255,.3);"></div>
+          <div style="position:absolute;left:50%;transform:translateX(-50%);bottom:32px;width:16px;height:16px;margin-left:-8px;background:radial-gradient(circle at 35% 35%,#ff9d6e,#E8520A);border-radius:50%;box-shadow:0 2px 8px rgba(232,82,10,.6);"></div>
+          <div style="position:absolute;left:50%;transform:translateX(-50%);bottom:12px;margin-left:-22px;width:0;height:0;border-left:0 solid transparent;border-right:10px solid transparent;border-top:18px solid #E8520A;transform:rotate(-20deg);"></div>
+          <div style="position:absolute;left:50%;transform:translateX(-50%);bottom:12px;margin-left:12px;width:0;height:0;border-left:10px solid transparent;border-right:0 solid transparent;border-top:18px solid #E8520A;transform:rotate(20deg);"></div>
+          <div style="position:absolute;left:50%;transform:translateX(-50%) translateX(-50%);bottom:2px;width:6px;height:14px;background:linear-gradient(to bottom,#F5A623,#F2C94C,transparent);border-radius:0 0 50% 50%;filter:blur(1px);animation:flame .4s ease-in-out infinite alternate;"></div>
+          <style>@keyframes flame{from{transform:translateX(-50%) scaleY(1);}to{transform:translateX(-50%) scaleY(1.2);}}</style>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--ink);">Proyecto de portafolio</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.55;">Fuentes: DANE · MinTIC · CCCE · Superfinanciera</div>
+        </div>
+      </div>
+
+      <!-- Hipotesis mini -->
+      <div class="cc" style="flex:1;">
+        <div class="cc-head"><div><div class="cc-title">Hipótesis iniciales</div><div class="cc-sub">Lo que esperábamos encontrar antes de analizar</div></div></div>
+        <div class="hypo-item">
+          <div class="hypo-num">01</div>
+          <div class="hypo-body"><div class="htag">Demografía</div><div class="htext">Jóvenes 18–34 compran más online que mayores de 45.</div></div>
+        </div>
+        <div class="hypo-item">
+          <div class="hypo-num">02</div>
+          <div class="hypo-body"><div class="htag">Dispositivos</div><div class="htext">Celular supera al computador con +65% transacciones.</div></div>
+        </div>
+        <div class="hypo-item">
+          <div class="hypo-num">03</div>
+          <div class="hypo-body"><div class="htag">Estrato</div><div class="htext">Ticket sube con estrato; estratos bajos lideran billeteras.</div></div>
+        </div>
+        <div class="hypo-item" style="border-bottom:none;padding-bottom:0;">
+          <div class="hypo-num">04</div>
+          <div class="hypo-body"><div class="htag">Barreras</div><div class="htext">Desconfianza en pagos es la barrera #1 en Colombia.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOURNEY STRIP -->
+  <div>
+    <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--o);margin-bottom:10px;">Cómo compra un colombiano online</div>
+    <div class="journey">
+      <div class="jstep"><div class="jn">01</div><div class="jt">Descubre</div><div class="jm">68% via redes sociales</div></div>
+      <div class="jstep"><div class="jn">02</div><div class="jt">Compara</div><div class="jm">2–3 plataformas</div></div>
+      <div class="jstep"><div class="jn">03</div><div class="jt">Evalúa</div><div class="jm">81% lee reseñas</div></div>
+      <div class="jstep"><div class="jn">04</div><div class="jt">Compra</div><div class="jm">64% abandono checkout</div></div>
+      <div class="jstep"><div class="jn">05</div><div class="jt">Recibe</div><div class="jm">3.2 días promedio</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 2: PERFIL ═══ -->
+<div class="page alt-page" id="p2">
+  <div class="ph">
+    <div class="ph-left"><div class="ph-label">Quién compra</div><div class="ph-title">Perfil del consumidor digital</div></div>
+    <div style="width:72px;height:72px;position:relative;flex-shrink:0;">
+      <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:26px;background:radial-gradient(circle at 35% 30%,#FBBF6A,#F5A623,#E8870A);border-radius:50%;box-shadow:0 4px 12px rgba(232,82,10,.4),inset -3px -2px 6px rgba(0,0,0,.15);"></div>
+      <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);margin-left:-4px;width:8px;height:8px;background:#18181B;border-radius:50%;"></div>
+      <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);margin-left:4px;width:8px;height:8px;background:#18181B;border-radius:50%;"></div>
+      <div style="position:absolute;top:22px;left:50%;transform:translateX(-50%);width:36px;height:34px;background:linear-gradient(135deg,#F2C94C,#F5A623,#E8870A);border-radius:8px 8px 14px 14px;box-shadow:inset -4px 0 8px rgba(0,0,0,.15),inset 3px 0 6px rgba(255,255,255,.2);"></div>
+      <div style="position:absolute;top:26px;left:50%;transform:translateX(-50%);width:14px;height:14px;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.5),#E8520A);border-radius:50%;margin-left:-7px;"></div>
+      <div style="position:absolute;top:26px;left:4px;width:8px;height:22px;background:linear-gradient(to right,#F5A623,#E8870A);border-radius:4px;transform:rotate(-15deg);box-shadow:inset -2px 0 4px rgba(0,0,0,.2);"></div>
+      <div style="position:absolute;top:26px;right:4px;width:8px;height:22px;background:linear-gradient(to left,#F5A623,#E8870A);border-radius:4px;transform:rotate(15deg);box-shadow:inset 2px 0 4px rgba(0,0,0,.2);"></div>
+      <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:40px;height:6px;background:radial-gradient(ellipse,rgba(232,82,10,.25) 0%,transparent 70%);border-radius:50%;"></div>
+    </div>
+  </div>
+  <div class="ph-divider"></div>
+
+  <div class="kpi-row">
+    <div class="kc kco"><div class="kc-lbl">18–24 años compran online</div><div class="kc-val">62%</div><div class="kc-src">DANE 2023</div></div>
+    <div class="kc"><div class="kc-lbl">Compradoras son mujeres</div><div class="kc-val">54%</div><div class="kc-src">DANE 2023</div></div>
+    <div class="kc"><div class="kc-lbl">Compradores área urbana</div><div class="kc-val">3 / 4</div><div class="kc-src">DANE 2023</div></div>
+    <div class="kc kcd"><div class="kc-lbl">Edad promedio comprador</div><div class="kc-val">28</div><div class="kc-src">DANE GEIH 2023</div></div>
+  </div>
+
+  <div class="g2" style="flex:1;min-height:0;">
+    <div class="cc">
+      <div class="cc-head"><div><div class="cc-title">Compra online por edad</div><div class="cc-sub">% con compra online — DANE TIC Hogares 2023</div></div><span class="cc-tag">DANE</span></div>
+      <div class="ca" style="min-height:220px;"><canvas id="ageChart"></canvas></div>
+      <div class="sn">Fuente: DANE — Encuesta TIC Hogares 2023</div>
+    </div>
+    <div class="cc">
+      <div class="cc-head"><div><div class="cc-title">Ticket promedio por estrato (COP)</div><div class="cc-sub">Valor promedio por transacción — DANE GEIH + CCCE 2023</div></div></div>
+      <div class="ca" style="min-height:220px;"><canvas id="estratoChart"></canvas></div>
+      <div class="sn">Fuente: DANE GEIH + CCCE 2023</div>
+    </div>
+  </div>
+
+  <div class="cc">
+    <div class="cc-head"><div><div class="cc-title">Dispositivos de compra 2019–2023</div><div class="cc-sub">% transacciones por dispositivo — MinTIC</div></div><span class="cc-tag">Mobile-first</span></div>
+    <div class="ca" style="min-height:200px;"><canvas id="disposChart"></canvas></div>
+    <div class="sn">Fuente: MinTIC — Informe conectividad y economía digital 2023</div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 3: PAGOS ═══ -->
+<div class="page" id="p3">
+  <div class="ph">
+    <div class="ph-left"><div class="ph-label">Cómo pagan</div><div class="ph-title">Métodos de pago digital</div></div>
+    <div style="width:72px;height:72px;position:relative;flex-shrink:0;perspective:200px;">
+      <div style="position:absolute;top:14px;left:4px;width:64px;height:42px;background:linear-gradient(135deg,#F5A623 0%,#E8520A 60%,#C04008 100%);border-radius:8px;transform:rotateX(8deg) rotateY(-5deg);box-shadow:0 8px 20px rgba(232,82,10,.45),inset 0 1px 0 rgba(255,255,255,.3);overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(105deg,rgba(255,255,255,.25) 0%,transparent 50%);"></div>
+        <div style="position:absolute;top:14px;left:0;right:0;height:8px;background:rgba(0,0,0,.2);"></div>
+        <div style="position:absolute;bottom:8px;left:10px;width:18px;height:3px;background:rgba(255,255,255,.4);border-radius:2px;"></div>
+        <div style="position:absolute;top:6px;right:8px;width:14px;height:14px;background:rgba(242,201,76,.8);border-radius:50%;"></div>
+        <div style="position:absolute;top:6px;right:14px;width:14px;height:14px;background:rgba(242,201,76,.5);border-radius:50%;"></div>
+      </div>
+      <div style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:52px;height:6px;background:radial-gradient(ellipse,rgba(232,82,10,.3) 0%,transparent 70%);border-radius:50%;"></div>
+    </div>
+  </div>
+  <div class="ph-divider"></div>
+
+  <!-- Pagos intro -->
+  <div style="background:#fff;border-radius:16px;padding:20px 24px;border:1px solid var(--border);display:flex;align-items:center;gap:20px;flex-shrink:0;">
+    <div style="font-size:13px;color:var(--muted);line-height:1.65;max-width:560px;">Analizar los métodos de pago revela <strong style="color:var(--ink);">cómo y con qué confianza</strong> el colombiano compra online. Las billeteras digitales crecen aceleradamente en estratos bajos, mientras la tarjeta domina en estratos altos.</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-left:auto;">
+      <!-- Visa-style card icon -->
+      <div style="width:64px;height:40px;background:linear-gradient(135deg,#1A1F71,#2E3A9E);border-radius:7px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(26,31,113,.3);">
+        <span style="font-size:13px;font-weight:800;color:#fff;letter-spacing:.5px;font-style:italic;">VISA</span>
+      </div>
+      <!-- Mastercard-style -->
+      <div style="width:64px;height:40px;background:#252525;border-radius:7px;display:flex;align-items:center;justify-content:center;gap:2px;box-shadow:0 4px 12px rgba(0,0,0,.25);">
+        <div style="width:18px;height:18px;background:#EB001B;border-radius:50%;"></div>
+        <div style="width:18px;height:18px;background:#F79E1B;border-radius:50%;margin-left:-8px;"></div>
+      </div>
+      <!-- Nequi-style -->
+      <div style="width:64px;height:40px;background:linear-gradient(135deg,#2D0862,#4A0E8F);border-radius:7px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(45,8,98,.4);">
+        <div style="display:flex;align-items:center;gap:2px;">
+          <div style="width:12px;height:12px;background:#E91E8C;border-radius:3px;transform:rotate(45deg);"></div>
+          <div style="width:12px;height:12px;background:#00BCD4;border-radius:3px;transform:rotate(45deg);opacity:.8;margin-left:-4px;"></div>
+          <span style="font-size:9px;font-weight:800;color:#fff;margin-left:3px;letter-spacing:-.3px;">NEQUI</span>
+        </div>
+      </div>
+      <!-- Daviplata-style -->
+      <div style="width:64px;height:40px;background:#E8000D;border-radius:7px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(232,0,13,.35);">
+        <span style="font-size:9px;font-weight:800;color:#fff;letter-spacing:-.3px;">DAVIplata</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kc kco">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:28px;height:18px;background:linear-gradient(135deg,#1A1F71,#2E3A9E);border-radius:4px;display:flex;align-items:center;justify-content:center;"><span style="font-size:7px;font-weight:800;color:#fff;font-style:italic;">VISA</span></div>
+        <div class="kc-lbl" style="margin:0;">Tarjeta de crédito</div>
+      </div>
+      <div class="kc-val">38%</div>
+      <div class="kc-src">Superfinanciera 2023</div>
+    </div>
+    <div class="kc">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:28px;height:18px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;gap:1px;">
+          <div style="width:9px;height:9px;background:#EB001B;border-radius:50%;"></div>
+          <div style="width:9px;height:9px;background:#F79E1B;border-radius:50%;margin-left:-4px;"></div>
+        </div>
+        <div class="kc-lbl" style="margin:0;">Billeteras digitales</div>
+      </div>
+      <div class="kc-val">27%</div>
+      <div class="kc-src">Superfinanciera 2023</div>
+    </div>
+    <div class="kc kcd">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:28px;height:18px;background:linear-gradient(135deg,#2D0862,#4A0E8F);border-radius:4px;display:flex;align-items:center;justify-content:center;">
+          <div style="display:flex;"><div style="width:6px;height:6px;background:#E91E8C;border-radius:2px;transform:rotate(45deg);"></div><div style="width:6px;height:6px;background:#00BCD4;border-radius:2px;transform:rotate(45deg);margin-left:-2px;opacity:.8;"></div></div>
+        </div>
+        <div class="kc-lbl" style="margin:0;">Usuarios Nequi 2025*</div>
+      </div>
+      <div class="kc-val">24.1M</div>
+      <div class="kc-src">Proyección Bancolombia</div>
+    </div>
+    <div class="kc">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:28px;height:18px;background:#E8000D;border-radius:4px;display:flex;align-items:center;justify-content:center;"><span style="font-size:6px;font-weight:800;color:#fff;">DAVIplata</span></div>
+        <div class="kc-lbl" style="margin:0;">Usuarios Daviplata 2025*</div>
+      </div>
+      <div class="kc-val">19.8M</div>
+      <div class="kc-src">Proyección Davivienda</div>
+    </div>
+  </div>
+
+  <div class="g3" style="flex:1;min-height:0;">
+    <div class="cc">
+      <div class="cc-head"><div><div class="cc-title">Distribución métodos 2023</div><div class="cc-sub">% transacciones — Superfinanciera</div></div></div>
+      <div class="ca" style="min-height:240px;"><canvas id="pagosChart"></canvas></div>
+      <div class="sn">Fuente: Superfinanciera 2023</div>
+    </div>
+    <div class="cc">
+      <div class="cc-head"><div><div class="cc-title">Crecimiento billeteras digitales</div><div class="cc-sub">Millones usuarios — 2019–2023</div></div></div>
+      <div class="ca" style="min-height:240px;"><canvas id="billChart"></canvas></div>
+      <div class="sn">Fuente: Superfinanciera + operadores 2023</div>
+    </div>
+    <div class="cc">
+      <div class="cc-head"><div><div class="cc-title">Pago preferido por edad</div><div class="cc-sub">% usuarios — DANE + Superfinanciera</div></div></div>
+      <div class="ca" style="min-height:240px;"><canvas id="edadPagoChart"></canvas></div>
+      <div class="sn">Fuente: DANE TIC Hogares + Superfinanciera 2023</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 4: GEOGRAFÍA ═══ -->
+<div class="page alt-page" id="p4">
+  <div class="ph">
+    <div class="ph-left"><div class="ph-label">Dónde compran</div><div class="ph-title" style="font-size:clamp(24px,2.8vw,40px);">Geografía del e-commerce colombiano</div></div>
+    <div style="width:72px;height:72px;position:relative;flex-shrink:0;">
+      <div style="position:absolute;top:4px;left:4px;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FBBF6A,#F5A623 40%,#E8520A 80%,#C04008);box-shadow:0 8px 24px rgba(232,82,10,.5),inset -6px -4px 14px rgba(0,0,0,.25),inset 6px 4px 10px rgba(255,255,255,.25);overflow:hidden;">
+        <div style="position:absolute;top:8px;left:8px;width:20px;height:20px;background:rgba(255,255,255,.12);border-radius:50%;transform:rotate(-30deg);border-top:2px solid rgba(255,255,255,.3);"></div>
+        <div style="position:absolute;top:22px;left:0;right:0;height:1px;background:rgba(0,0,0,.2);"></div>
+        <div style="position:absolute;top:32px;left:0;right:0;height:1px;background:rgba(0,0,0,.15);"></div>
+        <div style="position:absolute;top:0;bottom:0;left:20px;width:1px;background:rgba(0,0,0,.12);"></div>
+        <div style="position:absolute;top:0;bottom:0;left:35px;width:1px;background:rgba(0,0,0,.12);"></div>
+      </div>
+      <div style="position:absolute;top:10px;right:8px;width:10px;height:10px;background:radial-gradient(circle at 35% 35%,#fff,#E8520A);border-radius:50%;box-shadow:0 2px 6px rgba(232,82,10,.6);"></div>
+      <div style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:44px;height:6px;background:radial-gradient(ellipse,rgba(232,82,10,.3) 0%,transparent 70%);border-radius:50%;"></div>
+    </div>
+  </div>
+  <div class="ph-divider"></div>
+
+  <div style="background:#fff;border-radius:14px;padding:16px 20px;border:1px solid var(--border);margin-bottom:4px;display:flex;align-items:center;gap:16px;flex-shrink:0;">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" fill="#FFF4EE"/><path d="M16 8 C11 8 8 12 8 16 C8 20 11 24 16 24 C21 24 24 20 24 16 C24 12 21 8 16 8Z" fill="#E8520A" opacity=".15"/><circle cx="20" cy="12" r="4" fill="#E8520A"/><path d="M20 16 L20 26" stroke="#E8520A" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <div style="font-size:13px;color:var(--muted);line-height:1.65;">El e-commerce en Colombia está <strong style="color:var(--ink);">altamente concentrado</strong> en Bogotá, Antioquia y Valle del Cauca. Este análisis mapea la adopción por departamento y su correlación con la adopción de internet, revelando oportunidades de expansión en regiones con alto potencial sin explotar.</div>
+  </div>
+
+  <div class="g2" style="flex:1;min-height:0;align-items:start;">
+    <!-- MAP -->
+    <div class="cc">
+      <div class="cc-head"><div><div class="cc-title">Adopción e-commerce por departamento</div><div class="cc-sub">% hogares que compran online — DANE + MinTIC 2023</div></div></div>
+      <div style="display:flex;justify-content:center;">
+        <svg id="colMap" viewBox="0 0 340 480" width="100%" style="max-width:480px;display:block;">
+          <polygon class="dp" data-d="Bogotá D.C." data-p="72" points="178,248 188,244 192,252 184,258 176,254" fill="#E8520A"/>
+          <polygon class="dp" data-d="Antioquia" data-p="61" points="110,160 150,148 164,168 158,200 138,214 112,204 96,186" fill="#E8520A" opacity=".82"/>
+          <polygon class="dp" data-d="Valle del Cauca" data-p="58" points="100,248 128,240 136,264 122,284 96,276" fill="#E8520A" opacity=".74"/>
+          <polygon class="dp" data-d="Atlántico" data-p="55" points="148,72 168,66 174,80 158,86 146,82" fill="#F5A623"/>
+          <polygon class="dp" data-d="Cundinamarca" data-p="52" points="166,218 196,210 204,240 190,262 166,256 156,236" fill="#F5A623" opacity=".88"/>
+          <polygon class="dp" data-d="Santander" data-p="48" points="168,160 198,152 208,176 196,198 172,194 162,176" fill="#F5A623" opacity=".8"/>
+          <polygon class="dp" data-d="Risaralda" data-p="49" points="128,220 148,216 152,232 136,238 122,232" fill="#F5A623" opacity=".75"/>
+          <polygon class="dp" data-d="Bolívar" data-p="44" points="130,90 162,82 168,114 150,134 124,126 116,104" fill="#F5A623" opacity=".7"/>
+          <polygon class="dp" data-d="Boyacá" data-p="38" points="180,180 212,174 218,206 200,218 176,210" fill="#F2C94C" opacity=".9"/>
+          <polygon class="dp" data-d="Tolima" data-p="40" points="142,252 174,244 182,272 162,288 138,278" fill="#F2C94C" opacity=".85"/>
+          <polygon class="dp" data-d="Córdoba" data-p="30" points="100,110 130,102 138,130 118,148 96,138" fill="#F2C94C" opacity=".7"/>
+          <polygon class="dp" data-d="Meta" data-p="34" points="200,242 238,234 248,276 226,298 198,280" fill="#F2C94C" opacity=".72"/>
+          <polygon class="dp" data-d="Huila" data-p="32" points="162,290 196,278 204,308 184,328 158,316" fill="#F2C94C" opacity=".68"/>
+          <polygon class="dp" data-d="N. Santander" data-p="36" points="196,126 226,118 234,148 214,164 192,154" fill="#F2C94C" opacity=".78"/>
+          <polygon class="dp" data-d="Cauca" data-p="26" points="102,296 132,286 140,312 120,330 96,320" fill="#E4E0D8"/>
+          <polygon class="dp" data-d="Nariño" data-p="28" points="92,340 126,328 136,356 114,374 86,364" fill="#E4E0D8"/>
+          <polygon class="dp" data-d="Cesar" data-p="30" points="176,96 208,88 218,116 202,132 174,124" fill="#F2C94C" opacity=".65"/>
+          <polygon class="dp" data-d="La Guajira" data-p="22" points="186,50 218,38 228,62 208,76 184,70" fill="#E4E0D8"/>
+          <polygon class="dp" data-d="Vichada" data-p="12" points="246,196 292,180 302,230 272,256 244,240" fill="#D4D0C8"/>
+          <polygon class="dp" data-d="Guainía" data-p="10" points="268,240 304,228 314,272 286,290 262,274" fill="#D4D0C8" opacity=".8"/>
+          <polygon class="dp" data-d="Vaupés" data-p="11" points="248,290 282,278 290,320 264,338 242,318" fill="#D4D0C8" opacity=".75"/>
+          <polygon class="dp" data-d="Amazonas" data-p="14" points="200,370 250,356 268,400 242,428 198,420" fill="#D4D0C8" opacity=".7"/>
+          <text style="font-family:'Plus Jakarta Sans',sans-serif;font-size:8px;fill:#71717A;" x="173" y="252">BOG</text>
+          <text style="font-family:'Plus Jakarta Sans',sans-serif;font-size:8px;fill:#71717A;" x="120" y="183">ANT</text>
+          <text style="font-family:'Plus Jakarta Sans',sans-serif;font-size:8px;fill:#71717A;" x="102" y="263">VAL</text>
+          <text style="font-family:'Plus Jakarta Sans',sans-serif;font-size:8px;fill:#71717A;" x="148" y="77">ATL</text>
+          <rect id="mtb" x="0" y="0" width="130" height="44" rx="6" fill="#18181B" opacity="0" pointer-events="none"/>
+          <text id="mtn" x="0" y="0" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;fill:#F2C94C;" opacity="0" pointer-events="none"></text>
+          <text id="mtv" x="0" y="0" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;fill:rgba(255,255,255,.6);" opacity="0" pointer-events="none"></text>
+        </svg>
+      </div>
+      <!-- Legend -->
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);"><div style="width:10px;height:10px;background:#E8520A;border-radius:2px;"></div>Alto +55%</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);"><div style="width:10px;height:10px;background:#F5A623;border-radius:2px;"></div>Medio 35–55%</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);"><div style="width:10px;height:10px;background:#F2C94C;border-radius:2px;"></div>Bajo 20–35%</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);"><div style="width:10px;height:10px;background:#E4E0D8;border-radius:2px;"></div>Incipiente</div>
+      </div>
+      <div class="sn">Fuente: DANE TIC Hogares + MinTIC 2023</div>
+    </div>
+
+    <!-- Top depts + scatter -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="cc">
+        <div class="cc-head"><div><div class="cc-title">Top departamentos</div><div class="cc-sub">% adopción e-commerce</div></div></div>
+        <div class="dept-row"><span class="dept-n">Bogotá D.C.</span><div class="dept-bt"><div class="dept-bf" style="width:72%"></div></div><span class="dept-pct">72%</span></div>
+        <div class="dept-row"><span class="dept-n">Antioquia</span><div class="dept-bt"><div class="dept-bf" style="width:61%;background:#F5A623;"></div></div><span class="dept-pct" style="color:#F5A623;">61%</span></div>
+        <div class="dept-row"><span class="dept-n">Valle del Cauca</span><div class="dept-bt"><div class="dept-bf" style="width:58%;background:#F5A623;"></div></div><span class="dept-pct" style="color:#F5A623;">58%</span></div>
+        <div class="dept-row"><span class="dept-n">Atlántico</span><div class="dept-bt"><div class="dept-bf" style="width:55%;background:#F2C94C;"></div></div><span class="dept-pct" style="color:#F2C94C;">55%</span></div>
+        <div class="dept-row"><span class="dept-n">Cundinamarca</span><div class="dept-bt"><div class="dept-bf" style="width:52%;background:#F2C94C;"></div></div><span class="dept-pct" style="color:#F2C94C;">52%</span></div>
+        <div class="dept-row"><span class="dept-n">Santander</span><div class="dept-bt"><div class="dept-bf" style="width:48%;background:#D4D0C8;"></div></div><span class="dept-pct" style="color:#A1A1AA;">48%</span></div>
+        <div class="dept-row" style="border-bottom:none;"><span class="dept-n">Risaralda</span><div class="dept-bt"><div class="dept-bf" style="width:49%;background:#D4D0C8;"></div></div><span class="dept-pct" style="color:#A1A1AA;">49%</span></div>
+        <div class="sn">Fuente: DANE TIC Hogares + MinTIC 2023</div>
+      </div>
+      <div class="cc">
+        <div class="cc-head"><div><div class="cc-title">Internet vs compra online</div><div class="cc-sub">Correlación por departamento</div></div></div>
+        <div class="ca" style="min-height:180px;"><canvas id="correlChart"></canvas></div>
+        <div class="sn">Fuente: DANE + MinTIC 2023</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 5: TENDENCIA ═══ -->
+<div class="page dark-page" id="p5">
+  <div class="ph">
+    <div class="ph-left"><div class="ph-label">Evolución temporal</div><div class="ph-title">Tendencia 2018–2025 + Economía</div></div>
+    <svg width="72" height="72" viewBox="0 0 72 72">
+      <!-- Chart 3D -->
+      <rect x="8" y="14" width="56" height="44" rx="8" fill="rgba(255,255,255,.06)"/>
+      <polyline points="14,48 22,40 30,28 38,24 46,20 58,16" fill="none" stroke="#E8520A" stroke-width="2.5" stroke-linecap="round"/>
+      <polygon points="14,48 22,40 30,28 38,24 46,20 58,16 58,52 14,52" fill="#E8520A" opacity=".2"/>
+      <circle cx="46" cy="20" r="4" fill="#F2C94C"/>
+      <circle cx="58" cy="16" r="4" fill="#E8520A"/>
+    </svg>
+  </div>
+  <div class="ph-divider"></div>
+
+  <div class="kpi-row">
+    <div class="kc kco"><div class="kc-lbl">Adopción en 2018</div><div class="kc-val">14.2%</div><div class="kc-src">DANE 2018</div></div>
+    <div class="kc kcd" style="border:1px solid rgba(232,82,10,.4);"><div class="kc-lbl">Salto COVID-19</div><div class="kc-val">+14pp</div><div class="kc-badge">2019 → 2020</div><div class="kc-src">DANE 2020</div></div>
+    <div class="kc kcd"><div class="kc-lbl">Adopción en 2023</div><div class="kc-val">34.7%</div><div class="kc-src">DANE 2023</div></div>
+    <div class="kc kcd"><div class="kc-lbl">Crecimiento permanente</div><div class="kc-val">Sí</div><div class="kc-badge" style="background:rgba(34,197,94,.15);color:#4ade80;">Sin retroceso</div><div class="kc-src">Post-pandemia</div></div>
+  </div>
+
+  <div class="g3" style="flex:1;min-height:0;">
+    <div class="cc ccd" style="grid-column:span 2;">
+      <div class="cc-head"><div><div class="cc-title">Hogares que compraron online — Colombia 2018–2025</div><div class="cc-sub">% de hogares con al menos una compra online por año — DANE TIC Hogares</div></div><span class="cc-tag">DANE</span></div>
+      <div class="ca" style="min-height:220px;"><canvas id="tendBigChart"></canvas></div>
+      <div class="sn">Fuente: DANE — Encuesta TIC Hogares 2018–2024 / Proyección CCCE 2025</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="cc ccd" style="flex:1;">
+        <div class="cc-head"><div><div class="cc-title">Canal de transacciones</div><div class="cc-sub">Millones — Superfinanciera</div></div></div>
+        <div class="ca" style="min-height:130px;"><canvas id="canalChart"></canvas></div>
+        <div class="sn">Fuente: Superfinanciera 2023</div>
+      </div>
+      <div class="cc ccd" style="flex:1;">
+        <div class="cc-head"><div><div class="cc-title">Crecimiento e-commerce vs economía</div><div class="cc-sub">Crecimiento % — CCCE</div></div></div>
+        <div class="ca" style="min-height:130px;"><canvas id="econChart"></canvas></div>
+        <div class="sn">Fuente: CCCE 2023</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 6: SEGMENTOS ═══ -->
+<div class="page" id="p6">
+  <div class="ph">
+    <div class="ph-left"><div class="ph-label">Segmentación por comportamiento</div><div class="ph-title">Segmentación de consumidores</div></div>
+    <div style="width:72px;height:72px;position:relative;flex-shrink:0;">
+      <div style="position:absolute;top:6px;left:8px;width:56px;height:56px;border-radius:50%;background:conic-gradient(#E8520A 0deg 101deg,#F5A623 101deg 152deg,#F2C94C 152deg 231deg,#D4D0C8 231deg 360deg);box-shadow:0 8px 20px rgba(0,0,0,.2),inset 0 2px 0 rgba(255,255,255,.2);"></div>
+      <div style="position:absolute;top:20px;left:22px;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#F5F4F2,#E8E4DC);box-shadow:inset 0 2px 6px rgba(0,0,0,.1);"></div>
+      <div style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:44px;height:6px;background:radial-gradient(ellipse,rgba(0,0,0,.15) 0%,transparent 70%);border-radius:50%;"></div>
+    </div>
+  </div>
+  <div class="ph-divider"></div>
+
+  <div style="background:#fff;border-radius:14px;padding:16px 20px;border:1px solid var(--border);margin-bottom:4px;display:flex;align-items:center;gap:16px;flex-shrink:0;">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" fill="#FFF4EE"/><path d="M10 22 C10 18 12.7 16 16 16 C19.3 16 22 18 22 22" stroke="#E8520A" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="11" r="4" fill="#E8520A" opacity=".7"/></svg>
+    <div style="font-size:13px;color:var(--muted);line-height:1.65;">Con la Encuesta GEIH del DANE, se identificaron 4 arquetipos de consumidor digital colombiano. Cada segmento tiene un perfil demográfico, comportamiento de compra y método de pago diferenciado.</div>
+  </div>
+
+  <div class="g4">
+    <div class="cc" style="text-align:center;align-items:center;gap:10px;">
+      <div style="width:48px;height:48px;background:#FFF4EE;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+        <svg width="28" height="28" viewBox="0 0 28 28"><rect x="2" y="16" width="24" height="10" rx="3" fill="#E8520A"/><circle cx="14" cy="10" r="6" fill="#F5A623"/></svg>
+      </div>
+      <div style="font-size:36px;font-weight:800;color:#E8520A;letter-spacing:-1px;line-height:1;">28%</div>
+      <div style="font-size:13px;font-weight:700;">Comprador móvil</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">18–28 · Estrato 2–3<br>8–12 compras/año<br>Ticket COP 85K · Nequi</div>
+    </div>
+    <div class="cc" style="text-align:center;align-items:center;gap:10px;">
+      <div style="width:48px;height:48px;background:#FFFBF0;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+        <svg width="28" height="28" viewBox="0 0 28 28"><rect x="4" y="18" width="20" height="8" rx="3" fill="#F5A623"/><circle cx="14" cy="10" r="6" fill="#F2C94C"/><rect x="10" y="6" width="8" height="3" rx="1" fill="#F5A623"/></svg>
+      </div>
+      <div style="font-size:36px;font-weight:800;color:#F5A623;letter-spacing:-1px;line-height:1;">14%</div>
+      <div style="font-size:13px;font-weight:700;">Comprador premium</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">30–45 · Estrato 4–6<br>5–8 compras/año<br>Ticket COP 480K · Tarjeta</div>
+    </div>
+    <div class="cc" style="text-align:center;align-items:center;gap:10px;">
+      <div style="width:48px;height:48px;background:#FEFDF0;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+        <svg width="28" height="28" viewBox="0 0 28 28"><rect x="3" y="14" width="22" height="12" rx="3" fill="#F2C94C"/><circle cx="14" cy="9" r="5" fill="#F5A623"/></svg>
+      </div>
+      <div style="font-size:36px;font-weight:800;color:#F2C94C;letter-spacing:-1px;line-height:1;">22%</div>
+      <div style="font-size:13px;font-weight:700;">Comprador ocasional</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">35–55 · Estrato 2–4<br>1–3 compras/año<br>Ticket COP 210K · Contrae.</div>
+    </div>
+    <div class="cc" style="text-align:center;align-items:center;gap:10px;">
+      <div style="width:48px;height:48px;background:#F5F4F2;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+        <svg width="28" height="28" viewBox="0 0 28 28"><rect x="4" y="18" width="20" height="8" rx="3" fill="#D4D0C8"/><circle cx="14" cy="10" r="6" fill="#E4E0D8"/></svg>
+      </div>
+      <div style="font-size:36px;font-weight:800;color:#A1A1AA;letter-spacing:-1px;line-height:1;">36%</div>
+      <div style="font-size:13px;font-weight:700;">No comprador</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">45+ · Rural / Estrato 1<br>0 compras online<br>Alta desconfianza</div>
+    </div>
+  </div>
+
+  <div class="g2" style="flex:1;min-height:0;">
+    <div class="cc">
+      <div class="cc-head"><div><div class="cc-title">Tamaño de segmentos</div><div class="cc-sub">% población adulta colombiana — K-Means DANE GEIH 2023</div></div></div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-size:11px;color:var(--muted);">
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:9px;height:9px;background:#E8520A;border-radius:2px;display:inline-block;"></span>Comprador móvil 28%</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:9px;height:9px;background:#F5A623;border-radius:2px;display:inline-block;"></span>Premium 14%</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:9px;height:9px;background:#F2C94C;border-radius:2px;display:inline-block;"></span>Ocasional 22%</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:9px;height:9px;background:#D4D0C8;border-radius:2px;display:inline-block;"></span>No comprador 36%</span>
+      </div>
+      <div class="ca" style="min-height:200px;"><canvas id="segChart"></canvas></div>
+      <div class="sn">Agrupación K-Means aplicada sobre DANE GEIH 2023</div>
+    </div>
+    <div class="cc">
+      <div class="cc-head"><div><div class="cc-title">Ticket promedio por segmento</div><div class="cc-sub">COP promedio por transacción</div></div></div>
+      <div class="ca" style="min-height:200px;"><canvas id="ticketSegChart"></canvas></div>
+      <div class="sn">Calculado con datos de DANE GEIH + CCCE 2023</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAGE 7: GLOBAL + INSIGHTS ═══ -->
+<div class="page alt-page" id="p7">
+  <div class="ph">
+    <div class="ph-left"><div class="ph-label">Contexto global y conclusiones</div><div class="ph-title">Colombia vs el resto de LATAM</div></div>
+    <div style="width:72px;height:72px;position:relative;flex-shrink:0;">
+      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:28px;height:8px;background:linear-gradient(to right,#F2C94C,#F5A623);border-radius:4px;box-shadow:0 2px 6px rgba(232,82,10,.3);"></div>
+      <div style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);width:16px;height:14px;background:linear-gradient(to bottom,#F5A623,#E8870A);border-radius:2px;"></div>
+      <div style="position:absolute;top:6px;left:50%;transform:translateX(-50%);width:40px;height:40px;background:radial-gradient(circle at 35% 30%,#FBBF6A,#F5A623 40%,#E8870A);border-radius:50% 50% 45% 45%;box-shadow:0 6px 18px rgba(232,82,10,.5),inset -4px -3px 10px rgba(0,0,0,.2),inset 4px 3px 8px rgba(255,255,255,.3);"></div>
+      <div style="position:absolute;top:14px;left:6px;width:12px;height:22px;background:linear-gradient(to right,#F5A623,#F2C94C);border-radius:50% 0 0 50%;box-shadow:-2px 4px 8px rgba(232,82,10,.3);"></div>
+      <div style="position:absolute;top:14px;right:6px;width:12px;height:22px;background:linear-gradient(to left,#F5A623,#F2C94C);border-radius:0 50% 50% 0;box-shadow:2px 4px 8px rgba(232,82,10,.3);"></div>
+      <div style="position:absolute;top:16px;left:50%;transform:translateX(-50%);width:18px;height:18px;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,.5),#E8520A);border-radius:50%;font-size:10px;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;">1</div>
+      <div style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:42px;height:5px;background:radial-gradient(ellipse,rgba(232,82,10,.25) 0%,transparent 70%);border-radius:50%;"></div>
+    </div>
+  </div>
+  <div class="ph-divider"></div>
+
+  <div class="g-bot" style="flex:1;min-height:0;">
+    <!-- Internacional -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="cc">
+        <div class="cc-head"><div><div class="cc-title">Países que más compran online en LATAM</div><div class="cc-sub">Porcentaje de personas que compran online — CCCE 2023</div></div></div>
+        <div class="ca" style="min-height:200px;"><canvas id="intlChart"></canvas></div>
+        <div class="sn">Fuente: CCCE + eMarketer LATAM 2023</div>
+      </div>
+      <div class="cc">
+        <div class="cc-head"><div><div class="cc-title">Cómo estamos vs los vecinos</div></div></div>
+        <div class="il"><span class="il-name">Brasil</span><div class="il-bt"><div class="il-bf" style="width:68%;background:#F2C94C;"></div></div><span class="il-pct">68%</span></div>
+        <div class="il"><span class="il-name">Chile</span><div class="il-bt"><div class="il-bf" style="width:58%;background:#F5A623;"></div></div><span class="il-pct">58%</span></div>
+        <div class="il"><span class="il-name">México</span><div class="il-bt"><div class="il-bf" style="width:52%;background:#F5A623;opacity:.7;"></div></div><span class="il-pct">52%</span></div>
+        <div class="il" style="border-bottom:none;"><span class="il-name co">Colombia</span><div class="il-bt"><div class="il-bf" style="width:34.7%;background:#E8520A;"></div></div><span class="il-pct co">34.7%</span></div>
+        <div class="sn">Fuente: CCCE 2023 · eMarketer · CCCE · MinTIC</div>
+      </div>
+    </div>
+
+    <!-- Rec empresas -->
+    <div class="cc">
+      <div class="cc-head">
+        <div><div class="cc-title">Recomendaciones — E-commerce</div><div class="cc-sub">Qué puede hacer cada actor del mercado</div></div>
+        <div style="width:36px;height:36px;background:#FFF4EE;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E8520A" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+        </div>
+      </div>
+      <div class="rec-item"><div class="rdot"></div><span>Optimizar experiencia mobile-first: el 68% de compras ya es desde celular y crece cada año.</span></div>
+      <div class="rec-item"><div class="rdot"></div><span>Reducir fricción en checkout: 64% abandono de carrito representa pérdidas directas cuantificables.</span></div>
+      <div class="rec-item"><div class="rdot"></div><span>Invertir en Santander, Boyacá y Eje Cafetero: alta adopción creciente con menor competencia hoy.</span></div>
+      <div class="rec-item" style="border-bottom:none;padding-bottom:0;"><div class="rdot"></div><span>Activar el comprador ocasional con Black Friday y Cyber Days: duplican ventas en ese segmento.</span></div>
+    </div>
+
+    <!-- Rec fintech + sim -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="cc">
+        <div class="cc-head">
+          <div><div class="cc-title">Recomendaciones — Fintech</div><div class="cc-sub">Para billeteras y pagos digitales</div></div>
+          <div style="width:36px;height:36px;background:#FFF4EE;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E8520A" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          </div>
+        </div>
+        <div class="rec-item"><div class="rdot"></div><span>Nequi y Daviplata deben priorizar estratos 1–3: mayor crecimiento potencial sin explotar.</span></div>
+        <div class="rec-item"><div class="rdot"></div><span>Convertir contraentrega a digital con garantías claras de devolución: aún es 10% del mercado.</span></div>
+        <div class="rec-item" style="border-bottom:none;padding-bottom:0;"><div class="rdot"></div><span>23pp de brecha vs Chile: mercado enorme disponible en próximos 5 años con educación financiera.</span></div>
+      </div>
+
+      <div class="sim-card">
+        <div class="sim-title">Simulador de crecimiento</div>
+        <div style="position:relative;display:inline-block;margin-bottom:14px;" id="botTrigger" onmouseenter="document.getElementById('botTooltip').style.opacity='1';document.getElementById('botTooltip').style.transform='translateY(0)'" onmouseleave="document.getElementById('botTooltip').style.opacity='0';document.getElementById('botTooltip').style.transform='translateY(4px)'">
+          <!-- Bot face -->
+          <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid rgba(255,255,255,.25);transition:border-color .2s;" onmouseenter="this.style.borderColor='rgba(255,255,255,.6)'" onmouseleave="this.style.borderColor='rgba(255,255,255,.25)'">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="7" width="16" height="12" rx="4" fill="rgba(255,255,255,.9)"/>
+              <circle cx="9" cy="12" r="2" fill="#E8520A"/>
+              <circle cx="15" cy="12" r="2" fill="#E8520A"/>
+              <circle cx="9.8" cy="11.2" r=".6" fill="#fff"/>
+              <circle cx="15.8" cy="11.2" r=".6" fill="#fff"/>
+              <rect x="9" y="15" width="6" height="1.5" rx=".75" fill="#E8520A" opacity=".6"/>
+              <rect x="11" y="4" width="2" height="4" rx="1" fill="rgba(255,255,255,.9)"/>
+              <circle cx="12" cy="3.5" r="1.5" fill="rgba(255,255,255,.7)"/>
+            </svg>
+          </div>
+          <!-- Tooltip on hover -->
+          <div id="botTooltip" style="position:absolute;bottom:48px;left:50%;transform:translateX(-50%) translateY(4px);background:#18181B;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 14px;width:220px;font-size:11px;color:rgba(255,255,255,.8);line-height:1.55;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:10;text-align:left;">
+            Mueve los sliders para proyectar el crecimiento del e-commerce según variables clave.
+            <div style="position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:8px;height:8px;background:#18181B;border-right:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12);transform:translateX(-50%) rotate(45deg);"></div>
+          </div>
+        </div>
+        <div class="sim-sub">Ajusta las variables y observa el impacto estimado</div>
+        <div class="sim-big" id="simBig">+48%</div>
+        <div class="sc"><label>Confianza pagos <span class="sim-slider-val" id="v1">20%</span></label><input type="range" min="0" max="100" value="20" id="s1" oninput="sim()"></div>
+        <div class="sc"><label>Internet rural <span class="sim-slider-val" id="v2">15%</span></label><input type="range" min="0" max="100" value="15" id="s2" oninput="sim()"></div>
+        <div class="sc"><label>Billeteras digitales <span class="sim-slider-val" id="v3">25%</span></label><input type="range" min="0" max="100" value="25" id="s3" oninput="sim()"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end main -->
+
+<script>
+// Colores principales del proyecto
+const O='#E8520A',A='#F5A623',Y='#F2C94C',G='#D4D0C8',M='#71717A';
+// Configuración global de Chart.js
+Chart.defaults.font.family="'Plus Jakarta Sans',sans-serif";
+Chart.defaults.font.size=11;
+Chart.defaults.color=M;
+const grid={color:'rgba(0,0,0,0.05)'};
+const gridD={color:'rgba(255,255,255,0.06)'};
+const noL={legend:{display:false}};
+const bR={borderRadius:5};
+
+// Función para crear gráficas fácilmente sin repetir código
+function mk(id,cfg){const c=document.getElementById(id);if(!c)return;return new Chart(c,cfg);}
+
+mk('tendChart',{type:'line',data:{labels:['2018','2019','2020','2021','2022','2023','2024','2025*'],datasets:[{data:[14.2,18.6,28.4,31.8,33.2,34.7,37.1,39.8],borderColor:O,backgroundColor:'rgba(232,82,10,.18)',tension:.4,fill:true,pointRadius:3,pointBackgroundColor:O,pointBorderColor:'#18181B',pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:noL,scales:{y:{grid:gridD,ticks:{callback:v=>v+'%',color:'rgba(255,255,255,.35)'},border:{display:false}},x:{grid:{display:false},border:{display:false},ticks:{color:'rgba(255,255,255,.35)'}}}}});
+
+mk('barrerasChart',{type:'bar',data:{labels:['Desconfianza','Sin internet','Presencial','Sin cuenta','No sabe'],datasets:[{data:[38,24,19,11,8],backgroundColor:[O,A,A,Y,G],...bR,barThickness:12}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:noL,scales:{x:{grid,ticks:{callback:v=>v+'%'},max:45,border:{display:false}},y:{grid:{display:false},border:{display:false}}}}});
+
+mk('ageChart',{type:'bar',data:{labels:['18–24','25–34','35–44','45–54','55+'],datasets:[{data:[62,58,41,24,11],backgroundColor:[O,O,A,Y,G],...bR,barThickness:32}]},options:{responsive:true,maintainAspectRatio:false,plugins:noL,scales:{y:{grid,ticks:{callback:v=>v+'%'},max:80,border:{display:false}},x:{grid:{display:false},border:{display:false}}}}});
+
+mk('estratoChart',{type:'bar',data:{labels:['E1','E2','E3','E4','E5','E6'],datasets:[{data:[48000,72000,124000,248000,396000,612000],backgroundColor:[G,G,Y,A,O,O],...bR,barThickness:28}]},options:{responsive:true,maintainAspectRatio:false,plugins:noL,scales:{y:{grid,ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'K'},border:{display:false}},x:{grid:{display:false},border:{display:false}}}}});
+
+mk('disposChart',{type:'line',data:{labels:['2019','2020','2021','2022','2023','2024','2025*'],datasets:[{label:'Celular',data:[46,54,61,65,68,71,73],borderColor:O,backgroundColor:'rgba(232,82,10,.07)',tension:.4,fill:true,pointRadius:3},{label:'Computador',data:[46,38,32,28,24,21,19],borderColor:A,tension:.4,pointRadius:3},{label:'Tablet/otro',data:[8,8,7,7,8,8,8],borderColor:G,tension:.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{usePointStyle:true,pointStyle:'rect',boxWidth:7,padding:12,font:{size:10}}}},scales:{y:{grid,ticks:{callback:v=>v+'%'},max:80,border:{display:false}},x:{grid:{display:false},border:{display:false}}}}});
+
+mk('pagosChart',{type:'doughnut',data:{labels:['Tarjeta crédito','Billeteras','Débito','Contraentrega','Transfer.'],datasets:[{data:[38,27,18,10,7],backgroundColor:[O,A,Y,G,'#E4E0D8'],borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{usePointStyle:true,pointStyle:'rect',boxWidth:7,padding:10,font:{size:10}}},tooltip:{callbacks:{label:c=>c.label+': '+c.raw+'%'}}},cutout:'60%'}});
+
+mk('billChart',{type:'line',data:{labels:['2019','2020','2021','2022','2023','2024','2025*'],datasets:[{label:'Nequi',data:[1.2,3.8,9.2,14.6,18.4,21.2,24.1],borderColor:O,backgroundColor:'rgba(232,82,10,.07)',tension:.4,fill:true,pointRadius:3},{label:'Daviplata',data:[2.1,4.4,7.8,11.2,14.6,17.2,19.8],borderColor:A,tension:.4,pointRadius:3},{label:'Mercado Pago',data:[0.3,0.9,2.4,4.8,7.2,9.4,11.8],borderColor:Y,tension:.4,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{usePointStyle:true,pointStyle:'rect',boxWidth:7,padding:10,font:{size:10}}}},scales:{y:{grid,ticks:{callback:v=>v+'M'},border:{display:false}},x:{grid:{display:false},border:{display:false}}}}});
+
+mk('edadPagoChart',{type:'bar',data:{labels:['18–24','25–34','35–44','45–54','55+'],datasets:[{label:'Billetera',data:[52,38,22,12,5],backgroundColor:O,...bR},{label:'Tarjeta',data:[18,34,42,44,36],backgroundColor:A,...bR},{label:'Débito',data:[20,18,22,28,30],backgroundColor:Y,...bR},{label:'Contraentrega',data:[10,10,14,16,29],backgroundColor:G,...bR}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{usePointStyle:true,pointStyle:'rect',boxWidth:7,padding:10,font:{size:10}}}},scales:{x:{stacked:true,grid:{display:false},border:{display:false}},y:{stacked:true,grid,ticks:{callback:v=>v+'%'},border:{display:false}}}}});
+
+mk('correlChart',{type:'scatter',data:{datasets:[{data:[{x:90,y:72},{x:82,y:61},{x:79,y:58},{x:76,y:55},{x:70,y:48},{x:65,y:52},{x:60,y:49},{x:55,y:40},{x:52,y:38},{x:48,y:36},{x:44,y:32},{x:40,y:30},{x:36,y:28},{x:30,y:26},{x:24,y:22},{x:18,y:14}],backgroundColor:O,pointRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:noL,scales:{x:{title:{display:true,text:'Internet %',font:{size:10}},grid,border:{display:false}},y:{title:{display:true,text:'Compra online %',font:{size:10}},grid,border:{display:false}}}}});
+
+mk('tendBigChart',{type:'line',data:{labels:['2018','2019','2020','2021','2022','2023','2024','2025*'],datasets:[{data:[14.2,18.6,28.4,31.8,33.2,34.7,37.1,39.8],borderColor:O,backgroundColor:'rgba(232,82,10,.18)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:O,pointBorderColor:'#18181B',pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:noL,scales:{y:{grid:gridD,ticks:{callback:v=>v+'%',color:'rgba(255,255,255,.35)'},border:{display:false}},x:{grid:{display:false},border:{display:false},ticks:{color:'rgba(255,255,255,.35)'}}}}});
+
+mk('canalChart',{type:'bar',data:{labels:['2019','2020','2021','2022','2023','2024','2025*'],datasets:[{label:'App móvil',data:[620,980,1420,1840,2260,2680,3120],backgroundColor:O,...bR},{label:'Internet',data:[880,1040,1180,1260,1320,1380,1420],backgroundColor:A,...bR},{label:'Datáfono',data:[1240,840,960,1080,1180,1240,1290],backgroundColor:Y,...bR}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{usePointStyle:true,pointStyle:'rect',boxWidth:7,padding:8,font:{size:10}}}},scales:{x:{stacked:true,grid:{display:false},border:{display:false},ticks:{color:'rgba(255,255,255,.35)'}},y:{stacked:true,grid:gridD,ticks:{callback:v=>v+'M',color:'rgba(255,255,255,.35)'},border:{display:false}}}}});
+
+mk('econChart',{type:'line',data:{labels:['2019','2020','2021','2022','2023','2024','2025*'],datasets:[{label:'PIB %',data:[3.3,-7.0,10.6,7.3,1.2,1.8,2.4],borderColor:A,tension:.4,yAxisID:'y1',pointRadius:3},{label:'E-comm %',data:[22,52,18,12,9,10,11],borderColor:O,tension:.4,yAxisID:'y2',pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{usePointStyle:true,pointStyle:'rect',boxWidth:7,padding:8,font:{size:10}}}},scales:{y1:{type:'linear',position:'left',grid:gridD,ticks:{callback:v=>v+'%',color:'rgba(255,255,255,.35)'},border:{display:false}},y2:{type:'linear',position:'right',grid:{display:false},ticks:{callback:v=>v+'%',color:'rgba(255,255,255,.35)'},border:{display:false}},x:{grid:{display:false},border:{display:false},ticks:{color:'rgba(255,255,255,.35)'}}}}});
+
+mk('segChart',{type:'doughnut',data:{labels:['Comprador móvil','Comprador premium','Comprador ocasional','No comprador'],datasets:[{data:[28,14,22,36],backgroundColor:[O,A,Y,G],borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+c.raw+'%'}}},cutout:'55%'}});
+
+mk('ticketSegChart',{type:'bar',data:{labels:['Comprador\nmóvil','Comprador\npremium','Comprador\nocasional'],datasets:[{data:[85000,480000,210000],backgroundColor:[O,A,Y],...bR,barThickness:40}]},options:{responsive:true,maintainAspectRatio:false,plugins:noL,scales:{y:{grid,ticks:{callback:v=>'$'+(v/1000).toFixed(0)+'K'},border:{display:false}},x:{grid:{display:false},border:{display:false}}}}});
+
+mk('intlChart',{type:'bar',data:{labels:['Brasil','Chile','México','Colombia'],datasets:[{data:[68,58,52,34.7],backgroundColor:[Y,A,A,O],...bR,barThickness:40}]},options:{responsive:true,maintainAspectRatio:false,plugins:noL,scales:{y:{grid,ticks:{callback:v=>v+'%'},max:80,border:{display:false}},x:{grid:{display:false},border:{display:false}}}}});
+
+// Mapa interactivo - muestra el nombre del departamento al pasar el mouse
+document.querySelectorAll('.dp').forEach(el=>{
+  el.addEventListener('mouseenter',function(){
+    const pts=this.getAttribute('points').split(' ').map(p=>p.split(',').map(Number));
+    const cx=Math.min(pts.reduce((s,p)=>s+p[0],0)/pts.length+8,208);
+    const cy=Math.max(pts.reduce((s,p)=>s+p[1],0)/pts.length-52,6);
+    const tb=document.getElementById('mtb'),tn=document.getElementById('mtn'),tv=document.getElementById('mtv');
+    if(!tb)return;
+    tb.setAttribute('x',cx-4);tb.setAttribute('y',cy-4);
+    tn.setAttribute('x',cx+4);tn.setAttribute('y',cy+14);
+    tv.setAttribute('x',cx+4);tv.setAttribute('y',cy+30);
+    tn.textContent=this.dataset.d;tv.textContent='Adopción: '+this.dataset.p+'%';
+    [tb,tn,tv].forEach(e=>e.setAttribute('opacity','1'));
+  });
+  el.addEventListener('mouseleave',()=>{
+    ['mtb','mtn','mtv'].forEach(id=>{const e=document.getElementById(id);if(e)e.setAttribute('opacity','0');});
+  });
+});
+
+// Datos para cada año - al dar clic en los botones esto cambia los KPIs
+const yearData = {
+  '2025': {
+    hogares: '39.8%', badge_h: '+2.7pp vs 2024', src_h: 'Proyección DANE/CCCE 2025',
+    celular: '73%', src_c: 'Proyección MinTIC 2025',
+    internet: '40.8M', badge_i: '+4.1% anual', src_i: 'Proyección MinTIC 2025',
+    ecomm: '$96B', badge_e: 'COP · +11.6% vs 2024', src_e: 'Proyección CCCE 2025',
+    tend: [14.2,18.6,28.4,31.8,33.2,34.7,37.1,39.8],
+    tendLabels: ['2018','2019','2020','2021','2022','2023','2024','2025*'],
+    yrLabel: 'DANE 2025*'
+  },
+  '2024': {
+    hogares: '37.1%', badge_h: '+2.4pp vs 2023', src_h: 'DANE TIC Hogares 2024',
+    celular: '71%', src_c: 'MinTIC 2024',
+    internet: '39.2M', badge_i: '+5.4% anual', src_i: 'MinTIC 2024',
+    ecomm: '$86B', badge_e: 'COP · +19% vs 2023', src_e: 'CCCE 2024',
+    tend: [14.2,18.6,28.4,31.8,33.2,34.7,37.1],
+    tendLabels: ['2018','2019','2020','2021','2022','2023','2024'],
+    yrLabel: 'DANE 2024'
+  },
+  '2023': {
+    hogares: '34.7%', badge_h: '+3.2pp vs 2022', src_h: 'DANE TIC Hogares 2023',
+    celular: '68%', src_c: 'MinTIC 2023',
+    internet: '37.2M', badge_i: '+8.4% anual', src_i: 'MinTIC 2023',
+    ecomm: '$72B', badge_e: 'COP · +9% vs 2022', src_e: 'CCCE 2023',
+    tend: [14.2,18.6,28.4,31.8,33.2,34.7],
+    tendLabels: ['2018','2019','2020','2021','2022','2023'],
+    yrLabel: 'DANE 2023'
+  }
+};
+
+// Función para cambiar el texto de un elemento sin que explote si no existe
+function setEl(id, val){ const el=document.getElementById(id); if(el) el.textContent=val; }
+
+// Cuando el usuario da clic en un año, actualiza todo el dashboard
+function setYear(btn, yr) {
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const d = yearData[yr];
+  setEl('kpi-hogares', d.hogares);
+  setEl('kpi-hogares-badge', d.badge_h);
+  setEl('kpi-hogares-src', d.src_h);
+  setEl('kpi-celular', d.celular);
+  setEl('kpi-celular-src', d.src_c);
+  setEl('kpi-internet', d.internet);
+  setEl('kpi-internet-badge', d.badge_i);
+  setEl('kpi-internet-src', d.src_i);
+  setEl('kpi-ecomm', d.ecomm);
+  setEl('kpi-ecomm-badge', d.badge_e);
+  setEl('kpi-ecomm-src', d.src_e);
+  // Actualiza las etiquetas de año en toda la página
+  document.querySelectorAll('.yr-label').forEach(el => el.textContent = d.yrLabel);
+  // Actualiza las gráficas de tendencia
+  const tc = Chart.getChart('tendChart');
+  if(tc){ tc.data.labels = d.tendLabels; tc.data.datasets[0].data = d.tend; tc.update(); }
+  const tc2 = Chart.getChart('tendBigChart');
+  if(tc2){ tc2.data.labels = d.tendLabels; tc2.data.datasets[0].data = d.tend; tc2.update(); }
+}
+
+// Simulador - recalcula el resultado cada vez que se mueve un slider
+function sim(){
+  const v=[+s1.value,+s2.value,+s3.value];
+  v1.textContent=v[0]+'%';v2.textContent=v[1]+'%';v3.textContent=v[2]+'%';
+  const resultado = Math.min(Math.round(v[0]*.45+v[1]*.35+v[2]*.2), 100);
+  document.getElementById('simBig').textContent='+'+resultado+'%';
+}
+
+// Navegación lateral - resalta el botón activo y hace scroll suave
+document.querySelectorAll('.ni').forEach(a=>{
+  a.addEventListener('click',(e)=>{
+    e.preventDefault();
+    document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+    a.classList.add('active');
+    const target = document.querySelector(a.getAttribute('href'));
+    if(target) target.scrollIntoView({behavior:'smooth'});
+  });
+});
+// Update active on scroll
+const pages = document.querySelectorAll('.page');
+const navLinks = document.querySelectorAll('.ni');
+const mainEl = document.querySelector('.main');
+mainEl.addEventListener('scroll', ()=>{
+  let current = '';
+  pages.forEach(p=>{
+    const top = p.offsetTop - mainEl.scrollTop;
+    if(top <= mainEl.clientHeight/2) current = p.id;
+  });
+  navLinks.forEach(a=>{
+    a.classList.remove('active');
+    if(a.getAttribute('href')==='#'+current) a.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
